@@ -23,8 +23,8 @@ import lib.ecc.secded_decoder as dec;
 // Tests the encoder and decoder without any injected errors.
 fn no_errors<N: u32, K: u32>(data: bits[K]) -> bool {
     const R: u32 = N - K;
-    let (enc_data, enc_parity, _enc_codeword) = enc::br_ecc_secded_encoder<K, R, N>(data);
-    let (_dec_codeword, ce, due, syndrome, dec_data) = dec::br_ecc_secded_decoder<K, R, N>(enc_data, enc_parity);
+    let (enc_data, enc_parity, _enc_codeword) = enc::secded_encoder<K, R, N>(data);
+    let (_dec_codeword, ce, due, syndrome, dec_data) = dec::secded_decoder<K, R, N>(enc_data, enc_parity);
     !ce && !due && syndrome == uN[R]:0 && data == dec_data
 }
 
@@ -32,11 +32,11 @@ fn no_errors<N: u32, K: u32>(data: bits[K]) -> bool {
 fn single_bit_error_corrected<N: u32, K: u32>(data: bits[K], pos: bits[std::clog2(N)]) -> bool {
     if pos < N {
         const R: u32 = N - K;
-        let (_enc_data, _enc_parity, enc_codeword) = enc::br_ecc_secded_encoder<K, R, N>(data);
+        let (_enc_data, _enc_parity, enc_codeword) = enc::secded_encoder<K, R, N>(data);
         let rcv_codeword = bit_slice_update(enc_codeword, pos, !enc_codeword[pos +: u1]);
         let rcv_data = rcv_codeword[0 +: uN[K]];
         let rcv_parity = rcv_codeword[K +: uN[R]];
-        let (_dec_codeword, ce, due, syndrome, dec_data) = dec::br_ecc_secded_decoder<K, R, N>(rcv_data, rcv_parity);
+        let (_dec_codeword, ce, due, syndrome, dec_data) = dec::secded_decoder<K, R, N>(rcv_data, rcv_parity);
         ce && !due && syndrome != uN[R]:0 && data == dec_data
     } else {
         true
@@ -47,12 +47,12 @@ fn single_bit_error_corrected<N: u32, K: u32>(data: bits[K], pos: bits[std::clog
 fn double_bit_error_detected<N: u32, K: u32>(data: bits[K], pos0: bits[std::clog2(N)], pos1: bits[std::clog2(N)]) -> bool {
     if pos0 < pos1 && pos1 < N {
         const R: u32 = N - K;
-        let (_enc_data, _enc_parity, enc_codeword) = enc::br_ecc_secded_encoder<K, R, N>(data);
+        let (_enc_data, _enc_parity, enc_codeword) = enc::secded_encoder<K, R, N>(data);
         let flipped0 = bit_slice_update(enc_codeword, pos0, !enc_codeword[pos0 +: u1]);
         let rcv_codeword = bit_slice_update(flipped0, pos1, !flipped0[pos1 +: u1]);
         let rcv_data = rcv_codeword[0 +: uN[K]];
         let rcv_parity = rcv_codeword[K +: uN[R]];
-        let (_dec_codeword, ce, due, syndrome, _dec_data) = dec::br_ecc_secded_decoder<K, R, N>(rcv_data, rcv_parity);
+        let (_dec_codeword, ce, due, syndrome, _dec_data) = dec::secded_decoder<K, R, N>(rcv_data, rcv_parity);
         !ce && due && syndrome != uN[R]:0
     } else {
         true
@@ -64,13 +64,13 @@ fn double_bit_error_detected<N: u32, K: u32>(data: bits[K], pos0: bits[std::clog
 fn triple_bit_error_not_undetected<N: u32, K: u32>(data: bits[K], pos0: bits[std::clog2(N)], pos1: bits[std::clog2(N)], pos2: bits[std::clog2(N)]) -> bool {
     if pos0 < pos1 && pos1 < pos2 && pos2 < N {
         const R: u32 = N - K;
-        let (_enc_data, _enc_parity, enc_codeword) = enc::br_ecc_secded_encoder<K, R, N>(data);
+        let (_enc_data, _enc_parity, enc_codeword) = enc::secded_encoder<K, R, N>(data);
         let flipped0 = bit_slice_update(enc_codeword, pos0, !enc_codeword[pos0 +: u1]);
         let flipped1 = bit_slice_update(flipped0, pos1, !flipped0[pos1 +: u1]);
         let rcv_codeword = bit_slice_update(flipped1, pos2, !flipped1[pos2 +: u1]);
         let rcv_data = rcv_codeword[0 +: uN[K]];
         let rcv_parity = rcv_codeword[K +: uN[R]];
-        let (_dec_codeword, ce, due, syndrome, _dec_data) = dec::br_ecc_secded_decoder<K, R, N>(rcv_data, rcv_parity);
+        let (_dec_codeword, ce, due, syndrome, _dec_data) = dec::secded_decoder<K, R, N>(rcv_data, rcv_parity);
         (ce || due) && syndrome != uN[R]:0
         // Cannot check that if CE the dec_data matches the data because a miscorrection is possible.
     } else {
@@ -81,7 +81,7 @@ fn triple_bit_error_not_undetected<N: u32, K: u32>(data: bits[K], pos0: bits[std
 // Tests that the code is in systematic form (first K bits of the encoded codeword match the message).
 fn systematic<N: u32, K: u32>(data: bits[K]) -> bool {
     const R: u32 = N - K;
-    let (_enc_data, _enc_parity, enc_codeword) = enc::br_ecc_secded_encoder<K, R, N>(data);
+    let (_enc_data, _enc_parity, enc_codeword) = enc::secded_encoder<K, R, N>(data);
     data == enc_codeword[0 +: uN[K]]
 }
 
