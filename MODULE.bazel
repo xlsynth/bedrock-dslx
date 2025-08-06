@@ -21,10 +21,40 @@ module(
     version = "0.0.1",
 )
 
-bazel_dep(name = "rules_xlsynth", version = "0.0.0")  # placeholder version
+bazel_dep(name = "rules_xlsynth", version = "0.0.0")
 git_override(
     module_name = "rules_xlsynth",
     # Updated 2025-08-06
     commit = "3256814a0a708074ca7184399e3d609ad7f49ff4",
     remote = "https://github.com/xlsynth/rules_xlsynth",
 )
+
+bazel_dep(name = "eccgen", version = "0.0.1")
+git_override(
+    module_name = "eccgen",
+    # Updated 2025-08-06
+    commit = "3bcbdef8d1d258ed25c55f3ad604f50549036dee",
+    remote = "https://github.com/xlsynth/eccgen",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.8.1")
+
+bazel_dep(name = "rules_python", version = "1.5.1")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(python_version = "3.12")
+use_repo(python, "python_3_12", "python_versions", "pythons_hub")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+
+# The requirements_lock_3_12.txt file is auto-generated from requirements_3_12.in and statically checked in.
+# To regenerate it, run `bazel run //:requirements_3_12.update`.
+pip.parse(
+    # Hub names must be unique across Bazel modules. To avoid problems when integrating
+    # this module with others, namespace the hub name using the git repo name.
+    hub_name = "bedrock-dslx-pypi",
+    # We need to use the same version here as in the `python.toolchain` call.
+    python_version = "3.12",
+    requirements_lock = "//:requirements_lock_3_12.txt",
+)
+use_repo(pip, "bedrock-dslx-pypi")
