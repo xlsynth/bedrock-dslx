@@ -55,7 +55,7 @@ fn unpad_parity_check_matrix<MAX_PARITY_WIDTH: u32, CODEWORD_WIDTH: u32, MAX_COD
 }
 
 // Returns (codeword, error_ce, error_due, syndrome, data)
-pub fn br_ecc_secded_decoder_xls<DATA_WIDTH: u32, PARITY_WIDTH: u32, CODEWORD_WIDTH: u32 = {get_message_width(DATA_WIDTH, PARITY_WIDTH) + PARITY_WIDTH }>(data: bits[DATA_WIDTH], parity: bits[PARITY_WIDTH]) -> (bits[CODEWORD_WIDTH], u1, u1, bits[PARITY_WIDTH], bits[DATA_WIDTH]) {
+pub fn secded_decoder<DATA_WIDTH: u32, PARITY_WIDTH: u32, CODEWORD_WIDTH: u32 = {get_message_width(DATA_WIDTH, PARITY_WIDTH) + PARITY_WIDTH }>(data: bits[DATA_WIDTH], parity: bits[PARITY_WIDTH]) -> (bits[CODEWORD_WIDTH], u1, u1, bits[PARITY_WIDTH], bits[DATA_WIDTH]) {
     const INPUT_WIDTH: u32 = DATA_WIDTH + PARITY_WIDTH;
     const MESSAGE_WIDTH: u32 = get_message_width(DATA_WIDTH, PARITY_WIDTH);
     const PAD_WIDTH: u32 = MESSAGE_WIDTH - DATA_WIDTH;
