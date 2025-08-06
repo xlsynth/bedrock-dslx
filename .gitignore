@@ -1,4 +1,5 @@
 bazel-*
+user.bazelrc
 MODULE.bazel.lock
 .vscode
 .spr.yml

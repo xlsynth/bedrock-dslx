@@ -1,0 +1,11 @@
+# ACTION REQUIRED:
+#
+# This file provides some defaults for required Bazel flags. You will need to override
+# them in your own custom user.bazelrc file (included at the end of this file).
+common --action_env=XLSYNTH_TOOLS=""
+common --action_env=XLSYNTH_DRIVER_DIR=""
+common --action_env=XLSYNTH_DSLX_PATH=""
+
+# Import the user's custom .bazelrc file if it exists.
+# https://bazel.build/configure/best-practices#bazelrc-file
+try-import %workspace%/user.bazelrc
