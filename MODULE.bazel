@@ -24,6 +24,7 @@ module(
 bazel_dep(name = "rules_xlsynth", version = "0.0.0")  # placeholder version
 git_override(
     module_name = "rules_xlsynth",
-    commit = "a6e36b3d6f938706969398a2400efebfbe7b7843",
+    # Updated 2025-08-06
+    commit = "3256814a0a708074ca7184399e3d609ad7f49ff4",
     remote = "https://github.com/xlsynth/rules_xlsynth",
 )
