@@ -1,10 +1,7 @@
 # ACTION REQUIRED:
 #
-# This file provides some defaults for required Bazel flags. You will probably want to override
+# This file provides some defaults for required Bazel flags. You will need to override
 # them in your own custom user.bazelrc file (included at the end of this file).
-
-# Special environment setup commands that may be needed for your EDA tool environment.
-# The environment variable must be set to some string even if it's empty.
 common --action_env=XLSYNTH_TOOLS=""
 common --action_env=XLSYNTH_DRIVER_DIR=""
 common --action_env=XLSYNTH_DSLX_PATH=""
