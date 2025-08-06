@@ -30,8 +30,8 @@ dslx_library(
     name = "secded_test",
     srcs = ["secded_test.x"],
     deps = [
-        "//lib/ecc:secded_decoder",
-        "//lib/ecc:secded_encoder",
+        ":secded_decoder",
+        ":secded_encoder",
     ],
 )
 

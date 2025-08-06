@@ -23,7 +23,7 @@ fn get_message_width(data_width: u32, parity_width: u32) -> u32 {
     std::min(data_width_rounded_up_to_nearest_pow2, get_max_message_width(parity_width))
 }
 
-pub fn br_ecc_secded_encoder_xls<DATA_WIDTH: u32, PARITY_WIDTH: u32, CODEWORD_WIDTH: u32 = {get_message_width(DATA_WIDTH, PARITY_WIDTH) + PARITY_WIDTH}>(data: bits[DATA_WIDTH]) -> (bits[DATA_WIDTH], bits[PARITY_WIDTH], bits[CODEWORD_WIDTH]) {
+pub fn secded_encoder<DATA_WIDTH: u32, PARITY_WIDTH: u32, CODEWORD_WIDTH: u32 = {get_message_width(DATA_WIDTH, PARITY_WIDTH) + PARITY_WIDTH}>(data: bits[DATA_WIDTH]) -> (bits[DATA_WIDTH], bits[PARITY_WIDTH], bits[CODEWORD_WIDTH]) {
     const MAX_PARITY_WIDTH: u32 = u32:12;
     const MESSAGE_WIDTH: u32 = get_message_width(DATA_WIDTH, PARITY_WIDTH);
     const_assert!(PARITY_WIDTH <= MAX_PARITY_WIDTH);
