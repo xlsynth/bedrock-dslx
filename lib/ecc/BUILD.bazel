@@ -1,0 +1,122 @@
+# Copyright 2025 The Bedrock-DSLX Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("@rules_xlsynth//:rules.bzl", "dslx_library", "dslx_test")
+
+package(default_visibility = ["//visibility:public"])
+
+dslx_library(
+    name = "secded_encoder",
+    srcs = ["secded_encoder.x"],
+)
+
+dslx_library(
+    name = "secded_decoder",
+    srcs = ["secded_decoder.x"],
+)
+
+dslx_library(
+    name = "secded_test",
+    srcs = ["secded_test.x"],
+    deps = [
+        "//lib/ecc:secded_decoder",
+        "//lib/ecc:secded_encoder",
+    ],
+)
+
+# TODO(mgottscho): after https://github.com/xlsynth/rules_xlsynth/pull/39 merges, fold the dslx_library into this dslx_test
+dslx_test(
+    name = "run_secded_test",
+    deps = [":secded_test"],
+)
+
+py_binary(
+    name = "dslx_codegen",
+    srcs = ["dslx_codegen.py"],
+    deps = [
+        "@eccgen//eccgen:matrix_parser",
+        "@bedrock-dslx-pypi//jinja2:pkg",
+    ],
+)
+
+# Diff test and codegen
+diff_test(
+    name = "secded_encoder_diff_test",
+    failure_message = """
+        Golden secded_encoder.x does not match the generated code.
+        Please run `bazel run //lib/ecc:update_secded` to automatically update the golden.
+    """,
+    file1 = "secded_encoder.x",
+    file2 = ":gen_secded_encoder.x",
+)
+
+diff_test(
+    name = "secded_decoder_diff_test",
+    failure_message = """
+        Golden secded_decoder.x does not match the generated code.
+        Please run `bazel run //lib/ecc:update_secded` to automatically update the golden.
+    """,
+    file1 = "secded_decoder.x",
+    file2 = ":gen_secded_decoder.x",
+)
+
+genrule(
+    name = "gen_secded",
+    srcs = [
+        ":secded_encoder.x.jinja2",
+        ":secded_decoder.x.jinja2",
+        "@eccgen//eccgen/matrices",
+    ],
+    outs = [
+        "gen_secded_encoder.x",
+        "gen_secded_decoder.x",
+    ],
+    cmd = """
+set -eu
+M="$(@D)/matrices"
+mkdir -p "$$M"
+cp $(locations @eccgen//eccgen/matrices:matrices) "$$M"
+$(execpath :dslx_codegen) \
+  --matrix-dir "$$M" \
+  --encoder-template $(execpath :secded_encoder.x.jinja2) \
+  --encoder-output $(@D)/gen_secded_encoder.x \
+  --decoder-template $(execpath :secded_decoder.x.jinja2) \
+  --decoder-output $(@D)/gen_secded_decoder.x
+""",
+    tools = [":dslx_codegen"],
+)
+
+write_file(
+    name = "gen_update_secded",
+    out = "update_secded.sh",
+    content = [
+        "#!/usr/bin/env bash",
+        "cd $BUILD_WORKSPACE_DIRECTORY",
+        "cp -fv bazel-bin/lib/ecc/gen_secded_encoder.x lib/ecc/secded_encoder.x",
+        "cp -fv bazel-bin/lib/ecc/gen_secded_decoder.x lib/ecc/secded_decoder.x",
+    ],
+)
+
+sh_binary(
+    name = "update_secded",
+    srcs = [":update_secded.sh"],
+    data = [
+        "secded_decoder.x",
+        "secded_encoder.x",
+        ":gen_secded_decoder.x",
+        ":gen_secded_encoder.x",
+    ],
+)
