@@ -14,6 +14,8 @@
 
 // These tests were originally copied from https://github.com/xlsynth/dslx-llm/blob/main/samples/ecc.md.
 
+#![feature(type_inference_v2)]
+
 import std;
 import lib.ecc.secded_encoder as enc;
 import lib.ecc.secded_decoder as dec;
